@@ -1,0 +1,81 @@
+<!-- <html> -->
+<head>
+    <title>Hello Babel Template</title>
+</head>
+<body>
+<div>
+    <p>You've just created a simple Babel Camel Route! This Route will simply log a greeting to any name it
+        receives.</p>
+
+    <h2>Small word about Camel</h2>
+
+    <p>
+        Babel Camel is a DSL to define Camel Routes. It adds type validation and improve the functionnal aspect of the
+        existing Camel DSL.
+        For those who are not use with Camel yet, Apache Camel is a mediation and a routing engine. It implements the
+        "Enterprise Integration Patterns".
+        Camel lets you define high level structure, the Routes, which handles the transformations, routing and mediation
+        you want to do.
+        In this example, we will only see three aspects of Camel:
+    <ul>
+        <li>read from something</li>
+        <li>write to something</li>
+        <li>modify</li>
+    </ul>
+    and we will read <b>from</b> something, we will write <b>to</b> something and we will modify by <b>process</b>ing.
+    </p>
+    <h2>Project structure</h2>
+
+    <p>
+        The Route is defined in the src/main/scala/*Route.scala file.
+        The corresponding test is defined in the src/test/scala/*.RouteSpec.scala file.
+    </p>
+
+    <h2>Route code</h2>
+
+    <p>
+        The route code essentially takes the structure we defined higher: from -> process -> to
+        The route actually starts with a from, defining the source of the Messages that would fly in the Route.
+        The process (or processBody if affecting only the body of the Message) lets you define the transformation the message should take.
+        The to, finally, defines where the message should be sent to.
+    </p>
+    <p>
+        Both source and sink of messages are defined using Strings. Those strings actually define Camel Endpoints.
+        Those string follow most of the time the following schema: "ENDPOINT_TYPE:ADDRESS[?PARAMETERS]" where PARAMETERS are optionals.
+
+        You may also directly use existing Camel Endpoints if you prefer.
+    </p>
+
+    <h2>How to hack it</h2>
+
+    <h3>Process</h3>
+
+    <p>
+        The easiest thing you may do is modifying the process function and then have a look to the logged result.
+    </p>
+    <p>
+        You may add a second processBody keyword before the log keyword. While providing your function to this second
+        processBody keyword, you may pay attention to the fact that type modification made in the first processBody
+        keyword are actually taken into account in the second one.
+    </p>
+    <h2>What to do next</h2>
+
+    <p>
+        Incoming tutorial should come about the following subjects
+    <ul>
+        <li>split and aggregate</li>
+        <li>message routing</li>
+        <li>error handling</li>
+    </ul>
+    </p>
+
+    <h2>References</h2>
+    <ul>
+    <li><a href="http://crossing-tech.github.io/babel">Babel documentation</a></li>
+    <li><a href="https://groups.google.com/forum/#!forum/babel-user">Babel documentation</a></li>
+    <li><a href="http://camel.apache.org">Camel documentation</a></li>
+    </ul>
+
+</div>
+</body>
+</html>
