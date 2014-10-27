@@ -10,7 +10,7 @@
     <h2>Small word about Camel</h2>
 
     <p>
-        Babel Camel is a DSL to define Camel Routes. It adds type validation and improve the functionnal aspect of the
+        Babel Camel is a DSL to define Camel Routes. It adds type validation and improve the functional aspect of the
         existing Camel DSL.
         For those who are not use with Camel yet, Apache Camel is a mediation and a routing engine. It implements the
         "Enterprise Integration Patterns".
@@ -19,29 +19,41 @@
         In this example, we will only see three aspects of Camel:
     <ul>
         <li>read from something</li>
-        <li>write to something</li>
-        <li>modify</li>
+        <li>log it</li>
     </ul>
-    and we will read <b>from</b> something, we will write <b>to</b> something and we will modify by <b>process</b>ing.
+    and we will read <b>from</b> something and then <b>log</b> it. Then after we might also want to add some
+    <b>process</b>ing.
     </p>
+
     <h2>Project structure</h2>
 
     <p>
-        The Route is defined in the src/main/scala/*Route.scala file.
-        The corresponding test is defined in the src/test/scala/*.RouteSpec.scala file.
+        The Route is defined at <a href="#code/src/main/scala/HelloRoute.scala" class="shortcut">HelloRoute.scala</a>.
+        The corresponding test is defined at<a href="#code/src/test/scala/HelloRouteSpec.scala" class="shortcut">HelloRouteSpec.scala</a>.
     </p>
 
     <h2>Route code</h2>
 
     <p>
-        The route code essentially takes the structure we defined higher: from -> process -> to
-        The route actually starts with a from, defining the source of the Messages that would fly in the Route.
-        The process (or processBody if affecting only the body of the Message) lets you define the transformation the message should take.
-        The to, finally, defines where the message should be sent to.
+        The route code essentially takes the structure we defined higher: <code>from</code> -> <code>log</code>
+        The route actually starts with a <code>from</code>, defining the source of the Messages that would fly in the
+        Route.
+        Right after the <code>from</code> keyword, a <code>log</code> keyword let you define what you want to log.
     </p>
+
     <p>
-        Both source and sink of messages are defined using Strings. Those strings actually define Camel Endpoints.
-        Those string follow most of the time the following schema: "ENDPOINT_TYPE:ADDRESS[?PARAMETERS]" where PARAMETERS are optionals.
+        Both source (<code>from</code>) and sink(<code>to</code>) of messages are defined using Strings. Those strings
+        actually define Camel Endpoints.
+        Those string follow most of the time the following schema: "ENDPOINT_TYPE:ADDRESS[?PARAMETERS]" where PARAMETERS
+        are optionals.
+
+        You may also directly use existing Camel Endpoints if you prefer.
+    </p>
+
+    <p>
+        Logging(<code>log</code>) is defined also using a string.
+        Those string follow most of the time the following schema: "ENDPOINT_TYPE:ADDRESS[?PARAMETERS]" where PARAMETERS
+        are optionals.
 
         You may also directly use existing Camel Endpoints if you prefer.
     </p>
@@ -51,13 +63,54 @@
     <h3>Process</h3>
 
     <p>
-        The easiest thing you may do is modifying the process function and then have a look to the logged result.
+        The easiest thing you may do is to get control of what is being done.
+        To do so, open <a href="#code/src/main/scala/HelloRoute.scala" class="shortcut">HelloRoute.scala</a>.
+        Add a <code>processBody</code> keyword in the middle of your route (between the
+        <code>from("direct:hello")</code> and the <code>log("Hello ${body}")</code>). A nice little thing would be to
+        remove do the String concatenation with your <code>processBody</code> and no more with the <code>log</code>.
+
+        The <code>processBody</code> accepts a function such as I => O where I is the type of the input body and O is
+        the type of the output body. Create a function <pre><code>def hello (input: Any): String = s"Hello $input"</code></pre>.
+
+        Then your log keyword might look like <code>to("log:hello")</code> as the concatenation is done in the
+        <code>processBody</code> keyword. You may also write the concatenated string to a file with<code>to("file:file-path")</code>.
+
+        Your processBody may also take an anonymous function. It may look like <code>processBody(x => "Hello " + x)</code>
+        or <pre><code>processBody("Hello " + _)</code></pre>.
+    .
+
+        By the way, we unfortunately have not been able to provide a functional API for the <code>log</code> keyword.
+        This is thus a nice thing to avoid using the <code>"${body}"</code> tooling as this is managed by the Camel
+        Expression language.
+    </p>
+
+    <p>
+        Maybe you do not like the String and its ability to concatenate with anything so let's ensure we have a String
+        as input of our <code>processBody</code> keyword. To do so, right after the <code>from</code> statement, add a new
+        keyword: <code>requireAs</code> and the wanted Type. This will enforce the route to ensure its content is, at this
+        point, a String. You may get something like that:
+        <pre><code>from("direct:hello").requireAs[String].processBody(x => s"Hello $x").to("log:hello")</code></pre>
+        Your IDE should be informed that the <code>x</code> is of type String.
+
     </p>
     <p>
-        You may add a second processBody keyword before the log keyword. While providing your function to this second
-        processBody keyword, you may pay attention to the fact that type modification made in the first processBody
-        keyword are actually taken into account in the second one.
+        Good! At this point, you already have feel the two main aspects that Babel adds: Types and Functions. Let's take
+        a slightly more complicate and useful example: let's shake a bit the putting all the vowels to the beginning using
+        <code>HelloRoute.vowelAndConsonant</code>. You may use a first <code>processBody</code> to split the input into
+        two arrays of char and the another <code>processBody</code> to create the result String.
+
+        Finally, you may get something like
+        <pre><code>
+        from("direct:hello").requireAs[String]
+        .processBody(HelloRoute.vowelAndConsonant)
+        .processBody(x => (x._1.toList ::: x._2.toList).mkString(""))
+        .to("log:hello")
+        </code></pre>
+
+        The good thing is that the second <code>processBody</code> really typechecks its function. Now, you have a good
+        overview of what Babel is good for. We will see in the incoming ones other keywords.
     </p>
+
     <h2>What to do next</h2>
 
     <p>
@@ -71,9 +124,9 @@
 
     <h2>References</h2>
     <ul>
-    <li><a href="http://crossing-tech.github.io/babel">Babel documentation</a></li>
-    <li><a href="https://groups.google.com/forum/#!forum/babel-user">Babel documentation</a></li>
-    <li><a href="http://camel.apache.org">Camel documentation</a></li>
+        <li><a href="http://crossing-tech.github.io/babel">Babel documentation</a></li>
+        <li><a href="https://groups.google.com/forum/#!forum/babel-user">Babel User List</a></li>
+        <li><a href="http://camel.apache.org">Camel documentation</a></li>
     </ul>
 
 </div>
